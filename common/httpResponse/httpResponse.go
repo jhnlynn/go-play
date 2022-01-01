@@ -8,6 +8,7 @@ import (
 
 const errHeader = "httpResponse"
 
+// ReturnInternalError 500
 func ReturnInternalError(w http.ResponseWriter, r *http.Request, error error, errFrom string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusInternalServerError)
@@ -19,6 +20,7 @@ func ReturnInternalError(w http.ResponseWriter, r *http.Request, error error, er
 	log.Fatal(errFrom, error)
 }
 
+// ReturnSuccessStatus 200
 func ReturnSuccessStatus(w http.ResponseWriter, r *http.Request, v interface{}) {
 	js, err := json.MarshalIndent(v, "", "\t")
 	if err != nil {

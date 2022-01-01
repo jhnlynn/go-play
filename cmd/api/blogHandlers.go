@@ -14,16 +14,21 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
 	snowFlake "github.com/beinan/fastid"
 	"go-play/common/httpResponse"
 	"go-play/common/mongoHelper"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 )
 
 type Blog struct {
-	BlogId int `bson:"blog_id"`
+	BlogId int64 `bson:"blog_id"`
 	Views int `bson:"views"`
 	Cover string `bson:"cover"`
 	Title string `bson:"title"`
@@ -125,6 +130,7 @@ func (app *application) testInsertBlog(w http.ResponseWriter, r *http.Request) {
 	defer client.Disconnect(ctx)
 
 	blog := Blog {
+		BlogId: snowFlake.CommonConfig.GenInt64ID(),
 		Views: 0,
 		Cover: "6343",
 		Title: "tititi",
