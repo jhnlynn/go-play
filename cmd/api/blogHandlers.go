@@ -62,25 +62,9 @@ func (app *application) testMongo(w http.ResponseWriter, r *http.Request) {
 	defer client.Disconnect(ctx)
 	collection := client.Database("my_blogs").Collection("blogs")
 
-
-	cur, err := collection.Find(ctx, bson.D{})
+	var blogs Blog
+	err := collection.FindOne(ctx, bson.D{{"view", 0}}).Decode(&blogs)
 	if err != nil { log.Fatal("testMongo.collection Find: \n", err) }
-	defer cur.Close(ctx)
-
-	i := 5
-	var blogs []Blog
-
-	for cur.Next(ctx) && i > 0 {
-		var nextElem Blog
-		err := cur.Decode(&nextElem)
-		if err != nil { log.Fatal("testMongo.Decode: \n", err) }
-
-		i -= 1
-		blogs = append(blogs, nextElem)
-	}
-	if err := cur.Err(); err != nil {
-		log.Fatal(err)
-	}
 
 	fmt.Println(blogs)
 
