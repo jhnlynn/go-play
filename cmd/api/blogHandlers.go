@@ -180,6 +180,115 @@ func (app *application) testDeleteBlog(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Number of documents deleted: %d\n", result.DeletedCount)
 }
 
+
+/* ######################## real functions ######################## */
+func (app *application) postBlog(w http.ResponseWriter, r *http.Request) {
+	log.Println("handlers.postBlog")
+
+	// decode blog json from r *http.Request
+	decoder := json.NewDecoder(r.Body)
+	var blog Blog
+	err := decoder.Decode(&blog)
+	if err != nil {
+		panic(err)
+	}
+
+	blog.BlogId = snowFlake.CommonConfig.GenInt64ID()
+	blog.CreateTime = primitive.NewDateTimeFromTime(time.Now())
+	blog.UpdateTime = primitive.NewDateTimeFromTime(time.Now())
+
+	client, collection, ctx, err := getDBCollectionBlogs(w, r)
+	if err != nil {
+		log.Fatal("handlers.testUpdateBlog() error from getDBCollectionBlogs: ", err)
+	}
+
+	defer client.Disconnect(ctx)
+	//
+	doc, err := mongoHelper.ToDoc(blog)
+	if err != nil {
+		log.Fatalln(errHeader + ".testInsertBlog mongoHelper.ToDoc error: \n", err)
+	}
+
+	result, err := collection.InsertOne(context.TODO(), doc)
+	if err != nil {
+		log.Fatalln(errHeader + ".testInsertBlog collection.InsertOne error: \n", err)
+	}
+
+	httpResponse.ReturnSuccessStatus(w, r, result)
+}
+
+func (app *application) getBlogs(w http.ResponseWriter, r *http.Request) {
+	log.Println("handlers.getBlogs")
+
+	start, err := strconv.Atoi(r.URL.Query().Get("start"))
+	if err != nil {
+		panic(err)
+	}
+
+	size, err := strconv.Atoi(r.URL.Query().Get("size"))
+	if err != nil {
+		panic(err)
+	}
+
+	client, collection, ctx, err := getDBCollectionBlogs(w, r)
+	if err != nil {
+		log.Fatal("handlers.testUpdateBlog() error from getDBCollectionBlogs: ", err)
+	}
+
+	defer client.Disconnect(ctx)
+
+	var startPage int64
+	if start > 0 {
+		startPage = int64((start - 1) * size)
+	} else {
+		start = 0
+	}
+
+	cur, err := collection.Find(context.TODO(), bson.D{}, options.Find().SetSkip(startPage).SetLimit(int64(size)))
+
+	var result []Blog
+
+	if err = cur.All(context.TODO(), &result); err != nil {
+		panic(err)
+	}
+
+	fmt.Println(result)
+	httpResponse.ReturnSuccessStatus(w, r, result)
+}
+
+func (app *application) upload(w http.ResponseWriter, r *http.Request) {
+	log.Println("handlers.upload")
+
+	if len(os.Args) != 2 {
+		exitErrorf("Bucket name required\nUsage: %s bucket_name",
+			os.Args[0])
+	}
+
+	bucket := os.Args[1]
+
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String("us-west-2")},
+	)
+
+	// Create S3 service client
+	svc := s3.New(sess)
+
+	resp, err := svc.ListObjectsV2(&s3.ListObjectsV2Input{Bucket: aws.String(bucket)})
+	if err != nil {
+		exitErrorf("Unable to list items in bucket %q, %v", bucket, err)
+	}
+
+	for _, item := range resp.Contents {
+		fmt.Println("Name:         ", *item.Key)
+		fmt.Println("Last modified:", *item.LastModified)
+		fmt.Println("Size:         ", *item.Size)
+		fmt.Println("Storage class:", *item.StorageClass)
+		fmt.Println("")
+	}
+
+}
+/* ######################## END REGION ######################## */
+
 /* (http.MethodGet, "/testDelete/:id", app.testDeleteBlog) */
 func getDBCollectionBlogs(w http.ResponseWriter, r *http.Request) (*mongo.Client, *mongo.Collection, context.Context, error) {
 	client, err := mongo.NewClient(options.Client().ApplyURI(consts.GetMongoAPI()))
