@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
-	"time"
 )
 
 func CORSMiddleware() gin.HandlerFunc {
