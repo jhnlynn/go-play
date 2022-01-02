@@ -26,7 +26,7 @@ func (app *application) routes() http.Handler {
 
 	router.HandlerFunc(http.MethodPost, "/post-blog", app.postBlog)
 
-	router.HandlerFunc(http.MethodPost, "/upload", app.upload)
+	//routers.HandlerFunc(http.MethodPost, "/upload", app.upload)
 
 	return app.enableCORS(router)
 }

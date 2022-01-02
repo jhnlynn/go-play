@@ -14,17 +14,12 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 
 	snowFlake "github.com/beinan/fastid"
 	"go-play/common/httpResponse"
 	"go-play/common/mongoHelper"
-
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
 )
 
 type Blog struct {
@@ -186,7 +181,6 @@ func (app *application) testDeleteBlog(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Number of documents deleted: %d\n", result.DeletedCount)
 }
 
-
 /* ######################## real functions ######################## */
 func (app *application) postBlog(w http.ResponseWriter, r *http.Request) {
 	log.Println("handlers.postBlog")
@@ -260,38 +254,6 @@ func (app *application) getBlogs(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(result)
 	httpResponse.ReturnSuccessStatus(w, r, result)
-}
-
-func (app *application) upload(w http.ResponseWriter, r *http.Request) {
-	log.Println("handlers.upload")
-
-	if len(os.Args) != 2 {
-		exitErrorf("Bucket name required\nUsage: %s bucket_name",
-			os.Args[0])
-	}
-
-	bucket := os.Args[1]
-
-	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String("us-west-2")},
-	)
-
-	// Create S3 service client
-	svc := s3.New(sess)
-
-	resp, err := svc.ListObjectsV2(&s3.ListObjectsV2Input{Bucket: aws.String(bucket)})
-	if err != nil {
-		exitErrorf("Unable to list items in bucket %q, %v", bucket, err)
-	}
-
-	for _, item := range resp.Contents {
-		fmt.Println("Name:         ", *item.Key)
-		fmt.Println("Last modified:", *item.LastModified)
-		fmt.Println("Size:         ", *item.Size)
-		fmt.Println("Storage class:", *item.StorageClass)
-		fmt.Println("")
-	}
-
 }
 /* ######################## END REGION ######################## */
 

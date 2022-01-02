@@ -6,3 +6,5 @@ go.sum
 consts/
 
 .env
+
+gin.log
