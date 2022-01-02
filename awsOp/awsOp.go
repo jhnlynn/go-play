@@ -81,3 +81,49 @@ func ConnectAws() *session.Session {
 	}
 	return sess
 }
+
+func S3UploadImageAPI(c *gin.Context) (string, error) {
+	log.Println("start to upload image...")
+
+	sess := c.MustGet("sess").(*session.Session)
+
+	uploader := s3manager.NewUploader(sess)
+	MyBucket := getEnv.EnvWithKey("BUCKET_NAME")
+
+	file, header, err := c.Request.FormFile("photo")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H {
+			"error":  fmt.Sprintf("Failed to read from FormFile: %v" ,err),
+		})
+		return "nil", err
+	}
+
+	filename := uuid.New().String() + "." +  strings.Split(header.Filename, ".")[1]
+
+	log.Println("file name: \n", filename)
+
+	//upload to the s3 bucket
+	up, err := uploader.Upload(&s3manager.UploadInput {
+		Bucket: aws.String(MyBucket),
+		ACL:    aws.String("public-read"),
+		Key:    aws.String(filename),
+		Body:   file,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H {
+			"error":    "Failed to upload file",
+			"uploader": up,
+		})
+		fmt.Println("failed to upload file")
+		fmt.Println("here's the error: ", err)
+		return "nil", err
+	}
+	//filepath = "https://" + MyBucket + "." + "s3-" + MyRegion + ".amazonaws.com/" + filename
+	filepath = "https://" + MyBucket + "." + "s3" + ".amazonaws.com/" + filename
+	c.JSON(http.StatusOK, gin.H{
+		"filepath":    filepath,
+	})
+	fmt.Println("filepath: ", filepath)
+
+	return filepath, nil
+}
