@@ -8,3 +8,5 @@ consts/
 .env
 
 gin.log
+
+varTest/
