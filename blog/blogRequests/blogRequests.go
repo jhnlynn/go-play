@@ -8,7 +8,7 @@ import (
 	"go-play/blog"
 	"go-play/common/mongoHelper"
 	"go-play/consts"
-	"go-play/middleware"
+	"go-play/redisOp"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -61,7 +61,7 @@ func PostBlog(c *gin.Context) {
 		})
 	}
 
-	post.BlogId = snowFlake.CommonConfig.GenInt64ID()
+	post.BlogId = fmt.Sprintf("%d", snowFlake.CommonConfig.GenInt64ID())
 	post.CreateTime = primitive.NewDateTimeFromTime(time.Now())
 	post.UpdateTime = primitive.NewDateTimeFromTime(time.Now())
 
