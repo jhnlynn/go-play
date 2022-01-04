@@ -126,6 +126,27 @@ func GetBlog(c *gin.Context) {
 		}
 	}
 
+	// if IP addr of blogId is not in the Redis,
+	// set it, and update views
+	if !redisOp.GetRedis(c, blogId) {
+		redisOp.SetRedis(c, blogId)
+
+		update := bson.D{{"$set",
+			bson.D{{ "views", blogs.Views + 1} }}}
+
+		result, err := collection.UpdateOne(context.TODO(), filter,update)
+		// if update appears some err,
+		// should I return it here ?
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H {
+				"error": fmt.Sprintf("Mongo update error: %v", err),
+			})
+			return
+		} else {
+			log.Println("IP addr -- update Redis: ", result)
+		}
+	}
+
 	c.JSON(http.StatusOK, gin.H {
 		"blog": blogs,
 	})
