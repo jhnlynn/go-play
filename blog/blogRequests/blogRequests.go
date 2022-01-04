@@ -95,35 +95,24 @@ func PostBlog(c *gin.Context) {
 func GetBlog(c *gin.Context) {
 	log.Println("handlers.postBlog")
 
-	rawBlogId := c.Query("blog-id")
+	// get blog ID from the param in query
+	// and trans it to integer
+	blogId := c.Query("blog-id")
+	fmt.Println(blogId)
 
-	blogId, err := strconv.Atoi(rawBlogId)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H {
-			"error": fmt.Sprintf("Atoi error: %v", err),
-		})
-		return
-	}
-
+	// connection to mongoDB
 	client, ctx := mongoHelper.MongoConnection(c)
 	defer client.Disconnect(ctx)
-	collection := client.Database("my_blogs").Collection("post")
+	collection := client.Database("my_blogs").Collection("blogs")
 
-	ipAddr := c.GetHeader("X-Forwarded-For")
-
-	fmt.Println("idAddr: \n", ipAddr)
-
-	cache := middleware.Cache
+	filter := bson.D{{ "blog_id", blogId }}
 
 	var blogs blog.Blog
-
-	filter := bson.D{{ "blog_id", bsonx.Int64(int64(blogId)) }}
-
-	err = collection.FindOne(ctx, filter).Decode(&blogs)
+	err := collection.FindOne(ctx, filter).Decode(&blogs)
 	if err != nil {
 		fmt.Println("err.Error(): ", err.Error())
 		if strings.Contains(err.Error(), "no document") {
-			blogs.BlogId = -1
+			blogs.BlogId = "-1"
 			c.JSON(http.StatusBadRequest, gin.H {
 				"error": "no document",
 			})
