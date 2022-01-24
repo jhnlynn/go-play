@@ -3,7 +3,7 @@ package blog
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type Blog struct {
-	BlogId int64 `bson:"blog_id"`
+	BlogId string `bson:"blog_id"`
 	Views int `bson:"views"`
 	Cover string `bson:"cover"`
 	Title string `bson:"title"`

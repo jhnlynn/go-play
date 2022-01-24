@@ -6,9 +6,8 @@ import (
 	snowFlake "github.com/beinan/fastid"
 	"github.com/gin-gonic/gin"
 	"go-play/blog"
+	"go-play/common/getEnv"
 	"go-play/common/mongoHelper"
-	"go-play/consts"
-	"go-play/middleware"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -49,7 +48,7 @@ func TestMongo(c *gin.Context) {
 // PostBlog after uploaded the cover image,
 // should get the cover image URL from web page /*
 func PostBlog(c *gin.Context) {
-	log.Println("handlers.postBlog")
+	log.Println("posting blog")
 
 	// decode post json from r *http.Request
 	var post blog.Blog
@@ -61,7 +60,7 @@ func PostBlog(c *gin.Context) {
 		})
 	}
 
-	post.BlogId = snowFlake.CommonConfig.GenInt64ID()
+	post.BlogId = fmt.Sprintf("%d", snowFlake.CommonConfig.GenInt64ID())
 	post.CreateTime = primitive.NewDateTimeFromTime(time.Now())
 	post.UpdateTime = primitive.NewDateTimeFromTime(time.Now())
 
@@ -95,35 +94,24 @@ func PostBlog(c *gin.Context) {
 func GetBlog(c *gin.Context) {
 	log.Println("handlers.postBlog")
 
-	rawBlogId := c.Query("blog-id")
+	// get blog ID from the param in query
+	// and trans it to integer
+	blogId := c.Query("blog-id")
+	fmt.Println(blogId)
 
-	blogId, err := strconv.Atoi(rawBlogId)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H {
-			"error": fmt.Sprintf("Atoi error: %v", err),
-		})
-		return
-	}
-
+	// connection to mongoDB
 	client, ctx := mongoHelper.MongoConnection(c)
 	defer client.Disconnect(ctx)
-	collection := client.Database("my_blogs").Collection("post")
+	collection := client.Database("my_blogs").Collection("blogs")
 
-	ipAddr := c.GetHeader("X-Forwarded-For")
-
-	fmt.Println("idAddr: \n", ipAddr)
-
-	cache := middleware.Cache
+	filter := bson.D{{ "blog_id", blogId }}
 
 	var blogs blog.Blog
-
-	filter := bson.D{{ "blog_id", bsonx.Int64(int64(blogId)) }}
-
-	err = collection.FindOne(ctx, filter).Decode(&blogs)
+	err := collection.FindOne(ctx, filter).Decode(&blogs)
 	if err != nil {
 		fmt.Println("err.Error(): ", err.Error())
 		if strings.Contains(err.Error(), "no document") {
-			blogs.BlogId = -1
+			blogs.BlogId = "-1"
 			c.JSON(http.StatusBadRequest, gin.H {
 				"error": "no document",
 			})
@@ -137,6 +125,27 @@ func GetBlog(c *gin.Context) {
 		}
 	}
 
+	// if IP addr of blogId is not in the Redis,
+	// set it, and update views
+	//if !redisOp.GetRedis(c, blogId) {
+	//	redisOp.SetRedis(c, blogId)
+	//
+	//	update := bson.D{{"$set",
+	//		bson.D{{ "views", blogs.Views + 1} }}}
+	//
+	//	result, err := collection.UpdateOne(context.TODO(), filter,update)
+	//	// if update appears some err,
+	//	// should I return it here ?
+	//	if err != nil {
+	//		c.JSON(http.StatusInternalServerError, gin.H {
+	//			"error": fmt.Sprintf("Mongo update error: %v", err),
+	//		})
+	//		return
+	//	} else {
+	//		log.Println("IP addr -- update Redis: ", result)
+	//	}
+	//}
+
 	c.JSON(http.StatusOK, gin.H {
 		"blog": blogs,
 	})
@@ -145,6 +154,12 @@ func GetBlog(c *gin.Context) {
 // GetBlogList get pagination blogs /*
 func GetBlogList(c *gin.Context) {
 	log.Println("handlers.getBlogs")
+
+	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+	c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+	c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+	c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
+
 
 	rawStart, _ := c.GetQuery("start")
 	rawSize, _ := c.GetQuery("size")
@@ -206,10 +221,10 @@ func UpdateBlog(c *gin.Context) {
 	filter := bson.D{{"blog_id", post.BlogId}}
 	update := bson.D{{"$set",
 		bson.D{
-		{ "update_time", primitive.NewDateTimeFromTime(time.Now()) },
-		{ "cover", post.Cover },
-		{ "title", post.Title },
-		{ "content", post.Content },
+			{ "update_time", primitive.NewDateTimeFromTime(time.Now()) },
+			{ "cover", post.Cover },
+			{ "title", post.Title },
+			{ "content", post.Content },
 		},
 	}}
 
@@ -270,7 +285,7 @@ func DeleteBlog(c *gin.Context) {
 }
 
 func getDBCollectionBlogs(c *gin.Context) (*mongo.Client, *mongo.Collection, context.Context, error) {
-	client, err := mongo.NewClient(options.Client().ApplyURI(consts.GetMongoAPI()))
+	client, err := mongo.NewClient(options.Client().ApplyURI(getEnv.EnvWithKey("MONGO_URI")))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H {
 			"position": "getDBCollectionBlogs",
