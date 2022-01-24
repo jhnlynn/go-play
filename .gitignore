@@ -1,7 +1,5 @@
 .idea/
 
-consts/
-
 .env
 
 gin.log
