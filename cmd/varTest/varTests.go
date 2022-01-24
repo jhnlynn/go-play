@@ -29,8 +29,6 @@ func main() {
 	cn := rdb.Conn(context.Background())
 
 	defer cn.Close()
-
-
-
-	_ = router.Run(":4000")
+	
+	_ = router.Run()
 }
