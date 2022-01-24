@@ -49,7 +49,7 @@ func TestMongo(c *gin.Context) {
 // PostBlog after uploaded the cover image,
 // should get the cover image URL from web page /*
 func PostBlog(c *gin.Context) {
-	log.Println("handlers.postBlog")
+	log.Println("posting blog")
 
 	// decode post json from r *http.Request
 	var post blog.Blog
@@ -155,6 +155,12 @@ func GetBlog(c *gin.Context) {
 // GetBlogList get pagination blogs /*
 func GetBlogList(c *gin.Context) {
 	log.Println("handlers.getBlogs")
+
+	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+	c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+	c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+	c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
+
 
 	rawStart, _ := c.GetQuery("start")
 	rawSize, _ := c.GetQuery("size")

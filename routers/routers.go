@@ -5,6 +5,8 @@ import (
 	cors "github.com/rs/cors/wrapper/gin"
 	"go-play/awsOp"
 	"go-play/blog/blogRequests"
+	"go-play/imageUpload"
+
 	//"go-play/middleware"
 )
 
@@ -38,7 +40,7 @@ func Routers() *gin.Engine {
 
 	router.POST("/upload", awsOp.UploadImage)
 
-	router.GET("/testIP", blogRequests.TestGetIP)
+	router.POST("/local", imageUpload.UploadImageAndThumb)
 
 	return router
 }
