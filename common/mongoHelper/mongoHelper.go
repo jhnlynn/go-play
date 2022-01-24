@@ -3,7 +3,7 @@ package mongoHelper
 import (
 	"context"
 	"github.com/gin-gonic/gin"
-	"go-play/consts"
+	"go-play/common/getEnv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -23,7 +23,7 @@ func ToDoc(v interface{}) (doc *bson.D, err error) {
 }
 
 func MongoConnection(c *gin.Context) (*mongo.Client, context.Context) {
-	client, err := mongo.NewClient(options.Client().ApplyURI(consts.GetMongoAPI()))
+	client, err := mongo.NewClient(options.Client().ApplyURI(getEnv.EnvWithKey("MONGO_URI")))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H {
 			"position": "MongoConnection",

@@ -2,17 +2,17 @@ package main
 
 import (
 	"context"
+	"go-play/common/getEnv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"log"
 	"time"
 
-	"go-play/consts"
 )
 
 func MongoConnection() (*mongo.Client, context.Context) {
-	client, err := mongo.NewClient(options.Client().ApplyURI(consts.GetMongoAPI()))
+	client, err := mongo.NewClient(options.Client().ApplyURI(getEnv.EnvWithKey("MONGO_URI")))
 	if err != nil {
 		log.Fatal(err)
 	}
