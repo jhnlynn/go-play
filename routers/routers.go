@@ -38,7 +38,7 @@ func Routers() *gin.Engine {
 
 	router.POST("/upload", awsOp.UploadImage)
 
-	router.GET("/testIP", blogRequests.TestGetIP)
+	//router.GET("/testIP", blogRequests.TestGetIP)
 
 	return router
 }
