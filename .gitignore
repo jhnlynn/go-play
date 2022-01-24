@@ -1,12 +1,11 @@
 .idea/
 
-go.mod
-go.sum
-
 consts/
 
 .env
 
 gin.log
+
+imagePlayground/
 
 varTest/
