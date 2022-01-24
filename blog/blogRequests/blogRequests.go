@@ -178,6 +178,7 @@ func GetBlogList(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H {
 			"error": fmt.Sprintf("MongoDB error: %v", err),
 		})
+		panic(err)
 		return
 	}
 
@@ -198,6 +199,7 @@ func GetBlogList(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H {
 			"error": fmt.Sprintf("mongo All iterator error: %v", err),
 		})
+		panic(err)
 		return
 	}
 
@@ -285,6 +287,8 @@ func DeleteBlog(c *gin.Context) {
 }
 
 func getDBCollectionBlogs(c *gin.Context) (*mongo.Client, *mongo.Collection, context.Context, error) {
+	log.Println("mongo:", getEnv.EnvWithKey("MONGO_URI"))
+
 	client, err := mongo.NewClient(options.Client().ApplyURI(getEnv.EnvWithKey("MONGO_URI")))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H {
