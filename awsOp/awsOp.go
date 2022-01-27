@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"go-play/common/getEnv"
+	"go-play/middleware"
 	"log"
 	"net/http"
 	"strings"
@@ -21,6 +22,8 @@ var filepath string
 
 func UploadImage(c *gin.Context) {
 	log.Println("start to upload image...")
+
+	middleware.CORSMiddleware()
 
 	sess := c.MustGet("sess").(*session.Session)
 
