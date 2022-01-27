@@ -15,6 +15,7 @@ import (
 func ToDoc(v interface{}) (doc *bson.D, err error) {
 	data, err := bson.Marshal(v)
 	if err != nil {
+		panic(err)
 		return
 	}
 
@@ -29,6 +30,7 @@ func MongoConnection(c *gin.Context) (*mongo.Client, context.Context) {
 			"position": "MongoConnection",
 			"error": "Mongo NewClient error",
 		})
+		panic(err)
 		return nil, nil
 	}
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
@@ -38,6 +40,7 @@ func MongoConnection(c *gin.Context) (*mongo.Client, context.Context) {
 			"position": "MongoConnection",
 			"error": "context.WithTimeout error",
 		})
+		panic(err)
 		return client, nil
 	}
 
@@ -47,6 +50,7 @@ func MongoConnection(c *gin.Context) (*mongo.Client, context.Context) {
 			"position": "MongoConnection",
 			"error": "Mongo client.Ping error",
 		})
+		panic(err)
 		return client, ctx
 	}
 

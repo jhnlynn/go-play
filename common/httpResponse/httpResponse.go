@@ -14,7 +14,8 @@ func ReturnInternalError(w http.ResponseWriter, r *http.Request, error error, er
 	w.WriteHeader(http.StatusInternalServerError)
 	js, err := json.MarshalIndent(error, "", "\t")
 	if err != nil {
-		log.Fatalln("handlers returnInternalError MarshalIndent error: \n", err)
+		log.Println("handlers returnInternalError MarshalIndent error: \n", err)
+		panic(err)
 	}
 	w.Write(js)
 	log.Fatal(errFrom, error)
@@ -25,6 +26,7 @@ func ReturnSuccessStatus(w http.ResponseWriter, r *http.Request, v interface{}) 
 	js, err := json.MarshalIndent(v, "", "\t")
 	if err != nil {
 		ReturnInternalError(w, r, err, errHeader + ".ReturnSuccessStatus MarshalIndent error: \n")
+		panic(err)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
