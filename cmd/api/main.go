@@ -16,7 +16,7 @@ func LoadEnv() {
 }
 
 func main() {
-	LoadEnv()
+	// LoadEnv()
 
 	//awsAccessKeyID := GetEnvWithKey("AWS_ACCESS_KEY_ID")
 	//fmt.Println("My access key ID is ", awsAccessKeyID)
