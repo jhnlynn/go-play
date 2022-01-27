@@ -16,12 +16,17 @@ func LoadEnv() {
 }
 
 func main() {
-	//LoadEnv()
+	LoadEnv()
 
 	//awsAccessKeyID := GetEnvWithKey("AWS_ACCESS_KEY_ID")
 	//fmt.Println("My access key ID is ", awsAccessKeyID)
 
 	router := routers.Routers()
+	err := router.SetTrustedProxies([]string{"192.168.0.2"})
+	if err != nil {
+		panic(err)
+		return
+	}
 
 	_ = router.Run()
 }
