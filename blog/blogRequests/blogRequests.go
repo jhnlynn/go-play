@@ -8,6 +8,7 @@ import (
 	"go-play/blog"
 	"go-play/common/getEnv"
 	"go-play/common/mongoHelper"
+	"go-play/middleware"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -163,12 +164,7 @@ func GetBlog(c *gin.Context) {
 // GetBlogList get pagination blogs /*
 func GetBlogList(c *gin.Context) {
 	log.Println("handlers.getBlogs")
-
-	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-	c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-	c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-	c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
-
+	middleware.CORSMiddleware()
 
 	rawStart, _ := c.GetQuery("start")
 	rawSize, _ := c.GetQuery("size")
