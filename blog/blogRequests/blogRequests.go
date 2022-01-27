@@ -35,6 +35,7 @@ func TestMongo(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H {
 			"error": "Mongo FindOne error",
 		})
+		panic(err)
 		return
 	}
 
@@ -66,7 +67,10 @@ func PostBlog(c *gin.Context) {
 
 	client, collection, ctx, err := getDBCollectionBlogs(c)
 	if err != nil {
-		log.Fatal("handlers.testUpdateBlog() error from getDBCollectionBlogs: ", err)
+		log.Println("handlers.testUpdateBlog() error from getDBCollectionBlogs: ", err)
+
+		panic(err)
+		return
 	}
 
 	defer client.Disconnect(ctx)
@@ -76,6 +80,8 @@ func PostBlog(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H {
 			"error": fmt.Sprintf("bson.Unmarshal error: %v", err),
 		})
+		panic(err)
+		return
 	}
 
 	result, err := collection.InsertOne(context.TODO(), doc)
@@ -83,6 +89,8 @@ func PostBlog(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H {
 			"error": fmt.Sprintf("postBlog InsertOne error: %v", err),
 		})
+		panic(err)
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H {
@@ -121,6 +129,7 @@ func GetBlog(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H {
 				"error": fmt.Sprintf("Mongo FindOne error: %v\n", err),
 			})
+			panic(err)
 			return
 		}
 	}
@@ -233,7 +242,9 @@ func UpdateBlog(c *gin.Context) {
 
 	client, collection, ctx, err := getDBCollectionBlogs(c)
 	if err != nil {
-		log.Fatal("handlers.testUpdateBlog() error from getDBCollectionBlogs: ", err)
+		log.Println("handlers.testUpdateBlog() error from getDBCollectionBlogs: ", err)
+		panic(err)
+		return
 	}
 
 	defer client.Disconnect(ctx)
@@ -243,6 +254,7 @@ func UpdateBlog(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H {
 			"error": fmt.Sprintf("Mongo updateOne error: %v", err),
 		})
+		panic(err)
 		return
 	}
 
@@ -261,12 +273,16 @@ func DeleteBlog(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H {
 			"error": fmt.Sprintf("Atoi error: %v", err),
 		})
+
+		panic(err)
 		return
 	}
 
 	client, collection, ctx, err := getDBCollectionBlogs(c)
 	if err != nil {
-		log.Fatal("handlers.testDeleteBlog() error from getDBCollectionBlogs: ", err)
+		log.Println("handlers.testDeleteBlog() error from getDBCollectionBlogs: ", err)
+		panic(err)
+		return
 	}
 
 	defer client.Disconnect(ctx)
@@ -278,6 +294,7 @@ func DeleteBlog(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H {
 			"error": err,
 		})
+		panic(err)
 		return
 	}
 
@@ -287,8 +304,6 @@ func DeleteBlog(c *gin.Context) {
 }
 
 func getDBCollectionBlogs(c *gin.Context) (*mongo.Client, *mongo.Collection, context.Context, error) {
-	log.Println("mongo:", getEnv.EnvWithKey("MONGO_URI"))
-
 	client, err := mongo.NewClient(options.Client().ApplyURI(getEnv.EnvWithKey("MONGO_URI")))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H {
@@ -296,7 +311,7 @@ func getDBCollectionBlogs(c *gin.Context) (*mongo.Client, *mongo.Collection, con
 			"error": "Mongo NewClient error",
 			"msg": "please check in mongodb console",
 		})
-
+		panic(err)
 		return nil, nil, nil, err
 	}
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
@@ -307,7 +322,7 @@ func getDBCollectionBlogs(c *gin.Context) (*mongo.Client, *mongo.Collection, con
 			"error": "Mongo client.Connect error",
 			"msg": "please check client connection in mongo console",
 		})
-
+		panic(err)
 		return client, nil, ctx, err
 	}
 
@@ -317,7 +332,7 @@ func getDBCollectionBlogs(c *gin.Context) (*mongo.Client, *mongo.Collection, con
 			"position": "getDBCollectionBlogs",
 			"msg": "client ping failed",
 		})
-
+		panic(err)
 		return client, nil, ctx, err
 	}
 

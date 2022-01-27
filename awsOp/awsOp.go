@@ -32,6 +32,7 @@ func UploadImage(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H {
 			"error":  fmt.Sprintf("Failed to read from FormFile: %v" ,err),
 		})
+		panic(err)
 		return
 	}
 
@@ -51,8 +52,7 @@ func UploadImage(c *gin.Context) {
 			"error":    "Failed to upload file",
 			"uploader": up,
 		})
-		fmt.Println("failed to upload file")
-		fmt.Println("here's the error: ", err)
+		panic(err)
 		return
 	}
 	//filepath = "https://" + MyBucket + "." + "s3-" + MyRegion + ".amazonaws.com/" + filename
@@ -95,6 +95,7 @@ func S3UploadImageAPI(c *gin.Context) (string, error) {
 		c.JSON(http.StatusInternalServerError, gin.H {
 			"error":  fmt.Sprintf("Failed to read from FormFile: %v" ,err),
 		})
+		panic(err)
 		return "nil", err
 	}
 
