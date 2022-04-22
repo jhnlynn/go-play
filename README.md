@@ -1,3 +1,7 @@
+### Go-Play
+A demo with features of: MongoDB and AWS S3
+
+### Operations before you can play with this demo
 Create your AWS account, AWS S3 bucket, and change all the keys sets in .env file.
 
 Create your MongoDB account, create a DB called my_blogs, and a collection in it called blogs, copy connection URI to the file ./consts/dumTest.go
